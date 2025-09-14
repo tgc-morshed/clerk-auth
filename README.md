@@ -1,36 +1,157 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Clerk Authentication App
+
+A modern Next.js 15 application with Clerk authentication, featuring custom sign-up and sign-in pages, email verification, social login, and a protected dashboard.
+
+## Features
+
+- **Custom Authentication Pages**: Beautiful, responsive sign-up and sign-in forms
+- **Email Verification**: Complete verification flow with code input
+- **Social Login**: Google, Facebook, and Slack OAuth integration
+- **Protected Routes**: Middleware-protected dashboard and pages
+- **User Management**: API routes for storing and managing user data
+- **Modern UI**: Clean design with Tailwind CSS and shadcn/ui components
+- **TypeScript**: Full type safety throughout the application
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+- Node.js 18+ 
+- A Clerk account and application
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Environment Variables
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Create a `.env.local` file in the root directory:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+\`\`\`env
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=your_clerk_publishable_key
+CLERK_SECRET_KEY=your_clerk_secret_key
+NEXT_PUBLIC_CLERK_SIGN_IN_URL=/sign-in
+NEXT_PUBLIC_CLERK_SIGN_UP_URL=/sign-up
+NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL=/dashboard
+NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL=/dashboard
+\`\`\`
 
-## Learn More
+### Installation
 
-To learn more about Next.js, take a look at the following resources:
+1. Clone the repository
+2. Install dependencies:
+   \`\`\`bash
+   npm install
+   \`\`\`
+3. Set up your Clerk application:
+   - Create a new Clerk application
+   - Configure OAuth providers (Google, Facebook, Slack)
+   - Add your environment variables
+4. Run the development server:
+   \`\`\`bash
+   npm run dev
+   \`\`\`
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Project Structure
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+\`\`\`
+├── app/
+│   ├── api/
+│   │   ├── users/          # User management API
+│   │   └── health/         # Health check endpoint
+│   ├── dashboard/          # Protected dashboard page
+│   ├── sign-in/           # Custom sign-in page
+│   ├── sign-up/           # Custom sign-up page
+│   ├── sso-callback/      # OAuth callback handler
+│   ├── layout.tsx         # Root layout with ClerkProvider
+│   └── page.tsx           # Home page
+├── components/
+│   ├── ui/                # shadcn/ui components
+│   ├── dashboard-header.tsx
+│   ├── dashboard-stats.tsx
+│   ├── recent-activity.tsx
+│   └── quick-actions.tsx
+├── middleware.ts          # Clerk middleware for route protection
+└── README.md
+\`\`\`
 
-## Deploy on Vercel
+## Key Features Explained
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### Custom Authentication Forms
+- Built with React Hook Form and Zod validation
+- Password visibility toggle
+- Comprehensive error handling
+- Loading states and feedback
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### Email Verification Flow
+- Automatic email sending after sign-up
+- Custom verification code input
+- Seamless transition to dashboard after verification
+
+### Social Authentication
+- Pre-configured OAuth buttons for Google, Facebook, and Slack
+- Proper redirect handling through SSO callback page
+
+### Protected Routes
+- Middleware-based route protection
+- Automatic redirects for unauthenticated users
+- Server-side user data access
+
+### User Storage API
+- RESTful API for user management
+- In-memory storage (easily replaceable with database)
+- Full CRUD operations with authentication
+
+## Customization
+
+### Styling
+The app uses a custom color palette defined in `globals.css`. You can modify the CSS custom properties to match your brand:
+
+\`\`\`css
+:root {
+  --primary: #ea580c;        /* Orange-600 */
+  --secondary: #f97316;      /* Orange-500 */
+  --background: #ffffff;     /* White */
+  --foreground: #4b5563;     /* Gray-600 */
+  /* ... more colors */
+}
+\`\`\`
+
+### Database Integration
+Replace the in-memory storage in `/api/users/route.ts` with your preferred database:
+
+\`\`\`typescript
+// Example with Prisma
+import { prisma } from '@/lib/prisma'
+
+const newUser = await prisma.user.create({
+  data: { id, email, firstName, lastName }
+})
+\`\`\`
+
+## Deployment
+
+1. Deploy to Vercel:
+   \`\`\`bash
+   npm run build
+   vercel --prod
+   \`\`\`
+
+2. Add environment variables in your Vercel dashboard
+
+3. Update Clerk settings with your production URLs
+
+## Security Considerations
+
+- All API routes are protected with Clerk authentication
+- Middleware ensures only authenticated users can access protected pages
+- Environment variables are properly scoped (NEXT_PUBLIC_ for client-side)
+- Form validation prevents malicious input
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Add tests if applicable
+5. Submit a pull request
+
+## License
+
+MIT License - see LICENSE file for details

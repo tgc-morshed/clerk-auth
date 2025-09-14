@@ -1,0 +1,239 @@
+"use client"
+
+import { useState } from "react"
+import { useSignIn } from "@clerk/nextjs"
+import { useRouter } from "next/navigation"
+import { useForm } from "react-hook-form"
+import * as z from "zod"
+import { zodResolver } from "@hookform/resolvers/zod"
+import Link from "next/link"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Alert, AlertDescription } from "@/components/ui/alert"
+import { Separator } from "@/components/ui/separator"
+import { Loader2, Mail, Lock, Eye, EyeOff } from "lucide-react"
+
+const signInSchema = z.object({
+    email: z.string().email("Please enter a valid email address"),
+    password: z.string().min(1, "Password is required"),
+})
+
+type SignInFormData = z.infer<typeof signInSchema>
+
+export default function SignInPage() {
+    const { isLoaded, signIn, setActive } = useSignIn()
+    const [showPassword, setShowPassword] = useState(false)
+    const router = useRouter()
+
+    const form = useForm<SignInFormData>({
+        resolver: zodResolver(signInSchema),
+        defaultValues: {
+            email: "",
+            password: "",
+        },
+    })
+
+    const onSubmit = async (data: SignInFormData) => {
+        if (!isLoaded) return
+
+        try {
+            const result = await signIn.create({
+                identifier: data.email,
+                password: data.password,
+            })
+
+            console.log("Sign in result:", result);
+            
+
+            if (result.status === "complete") {
+                await setActive({ session: result.createdSessionId })
+                router.push("/dashboard")
+            }
+        } catch (err: any) {
+            form.setError("root", {
+                message: err.errors?.[0]?.message || "Invalid email or password",
+            })
+        }
+    }
+
+    const handleSocialSignIn = async (strategy: "oauth_google" | "oauth_facebook" | "oauth_slack") => {
+        if (!isLoaded) return
+
+        try {
+            await signIn.authenticateWithRedirect({
+                strategy,
+                redirectUrl: "/sso-callback",
+                redirectUrlComplete: "/dashboard",
+            })
+        } catch (err: any) {
+            console.error("Social sign in error:", err)
+        }
+    }
+
+    const handleForgotPassword = async () => {
+        if (!form.getValues("email")) {
+            form.setError("email", { message: "Please enter your email address first" })
+            return
+        }
+
+        try {
+            await signIn?.create({
+                identifier: form.getValues("email"),
+                strategy: "reset_password_email_code",
+            })
+            // You could show a success message or redirect to a password reset page
+            alert("Password reset email sent! Check your inbox.")
+        } catch (err: any) {
+            form.setError("root", {
+                message: err.errors?.[0]?.message || "Failed to send password reset email",
+            })
+        }
+    }
+
+    if (!isLoaded) {
+        return (
+            <div className="min-h-screen flex items-center justify-center">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            </div>
+        )
+    }
+
+    return (
+        <div className="min-h-screen bg-gradient-to-br from-background to-muted flex items-center justify-center p-4">
+            <Card className="w-full max-w-md">
+                <CardHeader className="text-center">
+                    <CardTitle className="text-2xl font-bold text-primary">Welcome Back</CardTitle>
+                    <CardDescription>Sign in to your account to continue</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="email">Email</Label>
+                            <div className="relative">
+                                <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                                <Input
+                                    id="email"
+                                    type="email"
+                                    placeholder="john@example.com"
+                                    className="pl-10"
+                                    {...form.register("email")}
+                                />
+                            </div>
+                            {form.formState.errors.email && (
+                                <p className="text-sm text-destructive">{form.formState.errors.email.message}</p>
+                            )}
+                        </div>
+
+                        <div className="space-y-2">
+                            <div className="flex items-center justify-between">
+                                <Label htmlFor="password">Password</Label>
+                                <Button
+                                    type="button"
+                                    variant="link"
+                                    className="px-0 font-normal text-sm text-muted-foreground hover:text-primary"
+                                    onClick={handleForgotPassword}
+                                >
+                                    Forgot password?
+                                </Button>
+                            </div>
+                            <div className="relative">
+                                <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                                <Input
+                                    id="password"
+                                    type={showPassword ? "text" : "password"}
+                                    placeholder="••••••••"
+                                    className="pl-10 pr-10"
+                                    {...form.register("password")}
+                                />
+                                <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="sm"
+                                    className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                                    onClick={() => setShowPassword(!showPassword)}
+                                >
+                                    {showPassword ? (
+                                        <EyeOff className="h-4 w-4 text-muted-foreground" />
+                                    ) : (
+                                        <Eye className="h-4 w-4 text-muted-foreground" />
+                                    )}
+                                </Button>
+                            </div>
+                            {form.formState.errors.password && (
+                                <p className="text-sm text-destructive">{form.formState.errors.password.message}</p>
+                            )}
+                        </div>
+
+                        {form.formState.errors.root && (
+                            <Alert variant="destructive">
+                                <AlertDescription>{form.formState.errors.root.message}</AlertDescription>
+                            </Alert>
+                        )}
+
+                        <Button type="submit" className="cursor-pointer w-full bg-gradient-to-b from-[#7B2AE5] to-[#932FFF] text-white shadow-[inset_3px_3px_7.3px_0_rgba(195,195,195,0.25)] hover:bg-none hover:bg-white hover:text-[#7B2AE5] hover:border hover:border-[#7B2AE5] hover:border-dashed" disabled={form.formState.isSubmitting}>
+                            {form.formState.isSubmitting ? (
+                                <>
+                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                    Signing In...
+                                </>
+                            ) : (
+                                "Sign In"
+                            )}
+                        </Button>
+                    </form>
+
+                    <div className="relative">
+                        <div className="absolute inset-0 flex items-center">
+                            <Separator className="w-full" />
+                        </div>
+                        <div className="relative flex justify-center text-xs uppercase">
+                            <span className="bg-card px-2 text-muted-foreground">Or continue with</span>
+                        </div>
+                    </div>
+
+                    <div className="grid grid-cols-3 gap-3">
+                        <Button variant="outline" onClick={() => handleSocialSignIn("oauth_google")} className="cursor-pointer w-full bg-[#4F00E2] text-white shadow-[inset_3px_3px_7.3px_0_rgba(195,195,195,0.25)] hover:bg-none hover:border hover:border-[#7B2AE5] hover:border-dashed">
+                            <svg className="h-4 w-4" viewBox="0 0 24 24">
+                                <path
+                                    fill="currentColor"
+                                    d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+                                />
+                                <path
+                                    fill="currentColor"
+                                    d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                                />
+                                <path
+                                    fill="currentColor"
+                                    d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
+                                />
+                                <path
+                                    fill="currentColor"
+                                    d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+                                />
+                            </svg>
+                        </Button>
+                        <Button variant="outline" onClick={() => handleSocialSignIn("oauth_facebook")} className="cursor-pointer w-full bg-[#4F00E2] text-white shadow-[inset_3px_3px_7.3px_0_rgba(195,195,195,0.25)] hover:bg-none hover:border hover:border-[#7B2AE5] hover:border-dashed">
+                            <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
+                            </svg>
+                        </Button>
+                        <Button variant="outline" onClick={() => handleSocialSignIn("oauth_slack")} className="cursor-pointer w-full bg-[#4F00E2] text-white shadow-[inset_3px_3px_7.3px_0_rgba(195,195,195,0.25)] hover:bg-none hover:border hover:border-[#7B2AE5] hover:border-dashed">
+                            <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M5.042 15.165a2.528 2.528 0 0 1-2.52 2.523A2.528 2.528 0 0 1 0 15.165a2.527 2.527 0 0 1 2.522-2.52h2.52v2.52zM6.313 15.165a2.527 2.527 0 0 1 2.521-2.52 2.527 2.527 0 0 1 2.521 2.52v6.313A2.528 2.528 0 0 1 8.834 24a2.528 2.528 0 0 1-2.521-2.522v-6.313zM8.834 5.042a2.528 2.528 0 0 1-2.521-2.52A2.528 2.528 0 0 1 8.834 0a2.528 2.528 0 0 1 2.521 2.522v2.52H8.834zM8.834 6.313a2.528 2.528 0 0 1 2.521 2.521 2.528 2.528 0 0 1-2.521 2.521H2.522A2.528 2.528 0 0 1 0 8.834a2.528 2.528 0 0 1 2.522-2.521h6.312zM18.956 8.834a2.528 2.528 0 0 1 2.522-2.521A2.528 2.528 0 0 1 24 8.834a2.528 2.528 0 0 1-2.522 2.521h-2.522V8.834zM17.688 8.834a2.528 2.528 0 0 1-2.523 2.521 2.527 2.527 0 0 1-2.52-2.521V2.522A2.527 2.527 0 0 1 15.165 0a2.528 2.528 0 0 1 2.523 2.522v6.312zM15.165 18.956a2.528 2.528 0 0 1 2.523 2.522A2.528 2.528 0 0 1 15.165 24a2.527 2.527 0 0 1-2.52-2.522v-2.522h2.52zM15.165 17.688a2.527 2.527 0 0 1-2.52-2.523 2.526 2.526 0 0 1 2.52-2.52h6.313A2.527 2.527 0 0 1 24 15.165a2.528 2.528 0 0 1-2.522 2.523h-6.313z" />
+                            </svg>
+                        </Button>
+                    </div>
+
+                    <div className="text-center text-sm">
+                        <span className="text-muted-foreground">Don't have an account? </span>
+                        <Link href="/sign-up" className="text-primary hover:underline font-medium">
+                            Sign up
+                        </Link>
+                    </div>
+                </CardContent>
+            </Card>
+        </div>
+    )
+}
