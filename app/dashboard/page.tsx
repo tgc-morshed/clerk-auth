@@ -12,17 +12,17 @@ export default async function DashboardPage() {
         redirect("/sign-in")
     }
 
-    const userData = {
-        id: user.id,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        imageUrl: user.imageUrl,
-        emailAddress: user.emailAddresses[0]?.emailAddress || null,
-    }
+    // const userData = {
+    //     id: user.id,
+    //     firstName: user.firstName,
+    //     lastName: user.lastName,
+    //     imageUrl: user.imageUrl,
+    //     emailAddress: user.emailAddresses[0]?.emailAddress || null,
+    // }
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-background to-muted">
-            <DashboardHeader user={userData} />
+            <DashboardHeader />
             {/* <main className="container mx-auto px-4 py-8 space-y-8">
                 <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
                     <DashboardStats />

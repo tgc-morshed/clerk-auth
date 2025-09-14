@@ -23,34 +23,36 @@ A modern Next.js 15 application with Clerk authentication, featuring custom sign
 
 Create a `.env.local` file in the root directory:
 
-\`\`\`env
+```
 NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=your_clerk_publishable_key
 CLERK_SECRET_KEY=your_clerk_secret_key
+NEXT_PUBLIC_CLERK_SIGN_UP_FALLBACK_REDIRECT_URL=/
+NEXT_PUBLIC_CLERK_SIGN_IN_FALLBACK_REDIRECT_URL=/
 NEXT_PUBLIC_CLERK_SIGN_IN_URL=/sign-in
 NEXT_PUBLIC_CLERK_SIGN_UP_URL=/sign-up
 NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL=/dashboard
 NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL=/dashboard
-\`\`\`
+```
 
 ### Installation
 
 1. Clone the repository
 2. Install dependencies:
-   \`\`\`bash
-   npm install
-   \`\`\`
+   ```bash
+   pnpm install
+   ```
 3. Set up your Clerk application:
    - Create a new Clerk application
    - Configure OAuth providers (Google, Facebook, Slack)
    - Add your environment variables
 4. Run the development server:
-   \`\`\`bash
+   ```bash
    npm run dev
-   \`\`\`
+   ```
 
 ## Project Structure
 
-\`\`\`
+```
 ├── app/
 │   ├── api/
 │   │   ├── users/          # User management API
@@ -69,7 +71,7 @@ NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL=/dashboard
 │   └── quick-actions.tsx
 ├── middleware.ts          # Clerk middleware for route protection
 └── README.md
-\`\`\`
+```
 
 ## Key Features Explained
 
@@ -103,7 +105,7 @@ NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL=/dashboard
 ### Styling
 The app uses a custom color palette defined in `globals.css`. You can modify the CSS custom properties to match your brand:
 
-\`\`\`css
+```css
 :root {
   --primary: #ea580c;        /* Orange-600 */
   --secondary: #f97316;      /* Orange-500 */
@@ -111,27 +113,19 @@ The app uses a custom color palette defined in `globals.css`. You can modify the
   --foreground: #4b5563;     /* Gray-600 */
   /* ... more colors */
 }
-\`\`\`
+```
 
 ### Database Integration
 Replace the in-memory storage in `/api/users/route.ts` with your preferred database:
 
-\`\`\`typescript
-// Example with Prisma
-import { prisma } from '@/lib/prisma'
-
-const newUser = await prisma.user.create({
-  data: { id, email, firstName, lastName }
-})
-\`\`\`
 
 ## Deployment
 
 1. Deploy to Vercel:
-   \`\`\`bash
-   npm run build
+   ```bash
+   pnpm run build
    vercel --prod
-   \`\`\`
+   ```
 
 2. Add environment variables in your Vercel dashboard
 

@@ -1,5 +1,5 @@
 "use client"
-import { useClerk } from "@clerk/nextjs"
+import { useClerk, useUser } from "@clerk/nextjs"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -12,18 +12,14 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { LogOut, Settings, UserIcon, Bell } from "lucide-react"
+import { serializeUser } from "@/lib/serializeUser"
 
-interface DashboardHeaderProps {
-  user: {
-    id: string
-    firstName: string | null
-    lastName: string | null
-    imageUrl: string | null
-    emailAddress: string | null
-  }
-}
 
-export function DashboardHeader({ user }: DashboardHeaderProps) {
+export function DashboardHeader() {
+  const {user} = useUser()
+  console.log("serialized user in Dashboard header", serializeUser(user));
+  
+  
   const { signOut } = useClerk()
   const router = useRouter()
 
@@ -42,7 +38,7 @@ export function DashboardHeader({ user }: DashboardHeaderProps) {
         {/* Left section */}
         <div>
           <h1 className="text-xl md:text-2xl font-bold text-primary">
-            Welcome back, {user.firstName || "User"}!
+            Welcome back, {user?.firstName || "User"}!
           </h1>
           <p className="text-muted-foreground text-sm mt-1">
             Here's what's happening with your account today.
@@ -71,7 +67,7 @@ export function DashboardHeader({ user }: DashboardHeaderProps) {
                   <p className="text-sm font-medium leading-none">
                     {user?.firstName} {user?.lastName}
                   </p>
-                  <p className="text-xs leading-none text-muted-foreground">{user?.emailAddress}</p>
+                  <p className="text-xs leading-none text-muted-foreground">{user?.emailAddresses[0]?.emailAddress || null}</p>
                 </div>
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
