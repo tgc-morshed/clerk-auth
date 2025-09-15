@@ -1,544 +1,151 @@
-# Next.js 15 + Clerk Authentication Implementation Guide
+# Clerk Authentication App
 
-## 📋 Table of Contents
+A modern Next.js 15 application with Clerk authentication, featuring custom sign-up and sign-in pages, email verification, social login, and a protected dashboard.
 
-1. [Project Overview](#project-overview)
-2. [Architecture](#architecture)
-3. [Setup & Configuration](#setup--configuration)
-4. [File Structure](#file-structure)
-5. [Authentication Flows](#authentication-flows)
-6. [Components Breakdown](#components-breakdown)
-7. [API Routes](#api-routes)
-8. [Environment Variables](#environment-variables)
-9. [Troubleshooting](#troubleshooting)
-10. [Best Practices](#best-practices)
+## Features
 
----
+- **Custom Authentication Pages**: Beautiful, responsive sign-up and sign-in forms
+- **Email Verification**: Complete verification flow with code input
+- **Social Login**: Google, Facebook, and Slack OAuth integration
+- **Protected Routes**: Middleware-protected dashboard and pages
+- **User Management**: API routes for storing and managing user data
+- **Modern UI**: Clean design with Tailwind CSS and shadcn/ui components
+- **TypeScript**: Full type safety throughout the application
 
-## 🚀 Project Overview
+## Getting Started
 
-This is a comprehensive Next.js 15 App Router application with Clerk authentication that provides:
+### Prerequisites
 
-- **Custom Authentication UI** - Custom sign-up and sign-in forms (not Clerk prebuilt)
-- **Email Verification** - Complete email verification flow with code input
-- **Social Authentication** - Google, Facebook, and Slack OAuth integration
-- **Protected Routes** - Middleware-based route protection
-- **User Management** - API routes for storing user data
-- **Modern UI** - Clean, responsive design with Tailwind CSS and shadcn/ui
+- Node.js 18+ 
+- A Clerk account and application
 
-### Key Features
+### Environment Variables
 
-✅ Custom sign-up with email verification  
-✅ Custom sign-in with social providers  
-✅ Protected dashboard with user profile  
-✅ Middleware route protection  
-✅ User data storage API  
-✅ Modern, responsive UI design  
-✅ Form validation with React Hook Form  
-✅ Error handling and loading states  
+Create a `.env.local` file in the root directory:
 
----
-
-## 🏗️ Architecture
-
-### Authentication Flow
-
-\`\`\`mermaid
-graph TD
-    A[User visits app] --> B{Authenticated?}
-    B -->|No| C[Redirect to sign-in]
-    B -->|Yes| D[Access protected routes]
-    C --> E[Sign-in/Sign-up forms]
-    E --> F[Email verification]
-    F --> G[Store user data]
-    G --> D
-\`\`\`
-
-### Tech Stack
-
-- **Framework**: Next.js 15 (App Router)
-- **Authentication**: Clerk
-- **Styling**: Tailwind CSS + shadcn/ui
-- **Forms**: React Hook Form
-- **Icons**: Lucide React
-- **Deployment**: Vercel
-
----
-
-## ⚙️ Setup & Configuration
-
-### 1. Environment Variables
-
-Create these environment variables in your Vercel project settings:
-
-\`\`\`env
-# Clerk Configuration
-NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_your_key_here
-CLERK_SECRET_KEY=sk_test_your_secret_key_here
-
-# Clerk URLs
+```
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=your_clerk_publishable_key
+CLERK_SECRET_KEY=your_clerk_secret_key
+NEXT_PUBLIC_CLERK_SIGN_UP_FALLBACK_REDIRECT_URL=/
+NEXT_PUBLIC_CLERK_SIGN_IN_FALLBACK_REDIRECT_URL=/
 NEXT_PUBLIC_CLERK_SIGN_IN_URL=/sign-in
 NEXT_PUBLIC_CLERK_SIGN_UP_URL=/sign-up
 NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL=/dashboard
 NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL=/dashboard
-\`\`\`
+```
 
-### 2. Clerk Dashboard Setup
+### Installation
 
-1. **Create Clerk Application**
-   - Go to [Clerk Dashboard](https://dashboard.clerk.com)
-   - Create new application
-   - Copy API keys
+1. Clone the repository
+2. Install dependencies:
+   ```bash
+   pnpm install
+   ```
+3. Set up your Clerk application:
+   - Create a new Clerk application
+   - Configure OAuth providers (Google, Facebook, Slack)
+   - Add your environment variables
+4. Run the development server:
+   ```bash
+   npm run dev
+   ```
 
-2. **Configure Social Providers** (Optional)
-   - Navigate to "SSO Connections"
-   - Enable Google, Facebook, Slack
-   - Follow provider-specific setup guides
+## Project Structure
 
-3. **Email Settings**
-   - Configure email templates
-   - Set up custom domain (optional)
+```
+├── app/
+│   ├── api/
+│   │   ├── users/          # User management API
+│   │   └── health/         # Health check endpoint
+│   ├── dashboard/          # Protected dashboard page
+│   ├── sign-in/           # Custom sign-in page
+│   ├── sign-up/           # Custom sign-up page
+│   ├── sso-callback/      # OAuth callback handler
+│   ├── layout.tsx         # Root layout with ClerkProvider
+│   └── page.tsx           # Home page
+├── components/
+│   ├── ui/                # shadcn/ui components
+│   ├── dashboard-header.tsx
+│   ├── dashboard-stats.tsx
+│   ├── recent-activity.tsx
+│   └── quick-actions.tsx
+├── middleware.ts          # Clerk middleware for route protection
+└── README.md
+```
 
-### 3. Dependencies
+## Key Features Explained
 
-The project uses these key dependencies:
+### Custom Authentication Forms
+- Built with React Hook Form and Zod validation
+- Password visibility toggle
+- Comprehensive error handling
+- Loading states and feedback
 
-\`\`\`json
-{
-  "@clerk/nextjs": "^6.0.0",
-  "react-hook-form": "^7.48.0",
-  "@hookform/resolvers": "^3.3.0",
-  "zod": "^3.22.0",
-  "lucide-react": "^0.400.0"
+### Email Verification Flow
+- Automatic email sending after sign-up
+- Custom verification code input
+- Seamless transition to dashboard after verification
+
+### Social Authentication
+- Pre-configured OAuth buttons for Google, Facebook, and Slack
+- Proper redirect handling through SSO callback page
+
+### Protected Routes
+- Middleware-based route protection
+- Automatic redirects for unauthenticated users
+- Server-side user data access
+
+### User Storage API
+- RESTful API for user management
+- In-memory storage (easily replaceable with database)
+- Full CRUD operations with authentication
+
+## Customization
+
+### Styling
+The app uses a custom color palette defined in `globals.css`. You can modify the CSS custom properties to match your brand:
+
+```css
+:root {
+  --primary: #ea580c;        /* Orange-600 */
+  --secondary: #f97316;      /* Orange-500 */
+  --background: #ffffff;     /* White */
+  --foreground: #4b5563;     /* Gray-600 */
+  /* ... more colors */
 }
-\`\`\`
+```
 
----
+### Database Integration
+Replace the in-memory storage in `/api/users/route.ts` with your preferred database:
 
-## 📁 File Structure
 
-\`\`\`
-app/
-├── layout.tsx                 # Root layout with ClerkProvider
-├── page.tsx                   # Home page with auth status
-├── sign-up/
-│   └── [[...sign-up]]/
-│       └── page.tsx           # Custom sign-up page
-├── sign-in/
-│   └── [[...sign-in]]/
-│       └── page.tsx           # Custom sign-in page
-├── dashboard/
-│   └── page.tsx               # Protected dashboard
-├── sso-callback/
-│   └── page.tsx               # OAuth callback handler
-└── api/
-    ├── users/
-    │   └── route.ts           # User storage API
-    └── health/
-        └── route.ts           # Health check API
+## Deployment
 
-components/
-├── dashboard-header.tsx       # Dashboard header with user info
-├── dashboard-stats.tsx        # Dashboard statistics cards
-├── recent-activity.tsx        # Recent activity feed
-├── quick-actions.tsx          # Quick action buttons
-└── ui/                        # shadcn/ui components
+1. Deploy to Vercel:
+   ```bash
+   pnpm run build
+   vercel --prod
+   ```
 
-middleware.ts                  # Route protection middleware
-\`\`\`
+2. Add environment variables in your Vercel dashboard
 
----
+3. Update Clerk settings with your production URLs
 
-## 🔐 Authentication Flows
+## Security Considerations
 
-### Sign-Up Flow
+- All API routes are protected with Clerk authentication
+- Middleware ensures only authenticated users can access protected pages
+- Environment variables are properly scoped (NEXT_PUBLIC_ for client-side)
+- Form validation prevents malicious input
 
-1. **Form Submission**
-   \`\`\`tsx
-   const { signUp, setActive } = useSignUp()
-   await signUp.create({
-     emailAddress,
-     password,
-     firstName,
-     lastName
-   })
-   \`\`\`
+## Contributing
 
-2. **Email Verification**
-   \`\`\`tsx
-   await signUp.prepareEmailAddressVerification({
-     strategy: "email_code"
-   })
-   \`\`\`
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Add tests if applicable
+5. Submit a pull request
 
-3. **Code Verification**
-   \`\`\`tsx
-   const completeSignUp = await signUp.attemptEmailAddressVerification({
-     code: verificationCode
-   })
-   \`\`\`
+## License
 
-4. **Auto Sign-In**
-   \`\`\`tsx
-   if (completeSignUp.status === "complete") {
-     await setActive({ session: completeSignUp.createdSessionId })
-   }
-   \`\`\`
-
-5. **Store User Data**
-   \`\`\`tsx
-   await fetch('/api/users', {
-     method: 'POST',
-     body: JSON.stringify({
-       id: user.id,
-       email: user.emailAddresses[0].emailAddress
-     })
-   })
-   \`\`\`
-
-### Sign-In Flow
-
-1. **Email/Password Sign-In**
-   \`\`\`tsx
-   const { signIn, setActive } = useSignIn()
-   const result = await signIn.create({
-     identifier: email,
-     password
-   })
-   \`\`\`
-
-2. **Social Sign-In**
-   \`\`\`tsx
-   await signIn.authenticateWithRedirect({
-     strategy: "oauth_google", // or oauth_facebook, oauth_slack
-     redirectUrl: "/sso-callback",
-     redirectUrlComplete: "/dashboard"
-   })
-   \`\`\`
-
----
-
-## 🧩 Components Breakdown
-
-### Layout Component (`app/layout.tsx`)
-
-**Purpose**: Root layout that wraps the entire app with ClerkProvider
-
-**Key Features**:
-- ClerkProvider configuration
-- Font setup (Geist Sans/Mono)
-- Global CSS imports
-- Theme provider integration
-
-\`\`\`tsx
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
-  return (
-    <ClerkProvider>
-      <html lang="en" className={`${geistSans.variable} ${geistMono.variable}`}>
-        <body className="antialiased">
-          <ThemeProvider attribute="class" defaultTheme="light">
-            {children}
-          </ThemeProvider>
-        </body>
-      </html>
-    </ClerkProvider>
-  )
-}
-\`\`\`
-
-### Sign-Up Page (`app/sign-up/[[...sign-up]]/page.tsx`)
-
-**Purpose**: Custom sign-up form with email verification
-
-**Key Features**:
-- React Hook Form with Zod validation
-- Multi-step flow (form → verification → success)
-- Error handling and loading states
-- Social sign-up buttons
-
-**Form Schema**:
-\`\`\`tsx
-const signUpSchema = z.object({
-  firstName: z.string().min(1, "First name is required"),
-  lastName: z.string().min(1, "Last name is required"),
-  emailAddress: z.string().email("Invalid email address"),
-  password: z.string().min(8, "Password must be at least 8 characters")
-})
-\`\`\`
-
-### Sign-In Page (`app/sign-in/[[...sign-in]]/page.tsx`)
-
-**Purpose**: Custom sign-in form with social authentication
-
-**Key Features**:
-- Email/password authentication
-- Social provider buttons (Google, Facebook, Slack)
-- Form validation and error handling
-- Redirect after successful sign-in
-
-### Dashboard Page (`app/dashboard/page.tsx`)
-
-**Purpose**: Protected dashboard showing user information
-
-**Key Features**:
-- Server-side user data fetching
-- Serialized user data passing to client components
-- Dashboard layout with stats and activities
-
-**Data Serialization**:
-\`\`\`tsx
-// Extract only serializable user data
-const userData = {
-  id: user.id,
-  firstName: user.firstName,
-  lastName: user.lastName,
-  imageUrl: user.imageUrl,
-  emailAddress: user.emailAddresses[0]?.emailAddress
-}
-\`\`\`
-
-### Middleware (`middleware.ts`)
-
-**Purpose**: Protect routes and handle authentication redirects
-
-**Configuration**:
-\`\`\`tsx
-export default authMiddleware({
-  publicRoutes: ["/", "/sign-in(.*)", "/sign-up(.*)", "/sso-callback"],
-  afterAuth(auth, req, evt) {
-    // Handle redirects after authentication
-    if (!auth.userId && !auth.isPublicRoute) {
-      return redirectToSignIn({ returnBackUrl: req.url })
-    }
-    
-    if (auth.userId && auth.isPublicRoute) {
-      return NextResponse.redirect(new URL('/dashboard', req.url))
-    }
-  }
-})
-\`\`\`
-
----
-
-## 🛠️ API Routes
-
-### User Storage API (`app/api/users/route.ts`)
-
-**Purpose**: Store user data after successful sign-up
-
-**Endpoints**:
-
-#### POST `/api/users`
-Creates or updates user record
-
-**Request Body**:
-\`\`\`json
-{
-  "id": "user_clerk_id",
-  "email": "user@example.com"
-}
-\`\`\`
-
-**Response**:
-\`\`\`json
-{
-  "success": true,
-  "message": "User created successfully",
-  "user": {
-    "id": "user_clerk_id",
-    "email": "user@example.com",
-    "createdAt": "2024-01-01T00:00:00.000Z"
-  }
-}
-\`\`\`
-
-#### GET `/api/users`
-Retrieves all users (admin endpoint)
-
-**Authentication**: Requires valid Clerk session
-
-### Health Check API (`app/api/health/route.ts`)
-
-**Purpose**: System health monitoring
-
-**Response**:
-\`\`\`json
-{
-  "status": "healthy",
-  "timestamp": "2024-01-01T00:00:00.000Z",
-  "services": {
-    "clerk": "connected",
-    "database": "connected"
-  }
-}
-\`\`\`
-
----
-
-## 🔧 Environment Variables
-
-### Required Variables
-
-| Variable | Description | Example |
-|----------|-------------|---------|
-| `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` | Clerk publishable key | `pk_test_...` |
-| `CLERK_SECRET_KEY` | Clerk secret key | `sk_test_...` |
-| `NEXT_PUBLIC_CLERK_SIGN_IN_URL` | Sign-in page URL | `/sign-in` |
-| `NEXT_PUBLIC_CLERK_SIGN_UP_URL` | Sign-up page URL | `/sign-up` |
-| `NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL` | Redirect after sign-in | `/dashboard` |
-| `NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL` | Redirect after sign-up | `/dashboard` |
-
-### Optional Variables
-
-| Variable | Description | Default |
-|----------|-------------|---------|
-| `DATABASE_URL` | Database connection string | In-memory storage |
-| `WEBHOOK_SECRET` | Clerk webhook secret | Not configured |
-
----
-
-## 🐛 Troubleshooting
-
-### Common Issues
-
-#### 1. "Only plain objects can be passed to Client Components"
-
-**Problem**: Passing complex Clerk User object to client components
-
-**Solution**: Extract only serializable data:
-\`\`\`tsx
-// ❌ Don't do this
-<ClientComponent user={clerkUser} />
-
-// ✅ Do this instead
-const userData = {
-  id: clerkUser.id,
-  firstName: clerkUser.firstName,
-  // ... other serializable fields
-}
-<ClientComponent user={userData} />
-\`\`\`
-
-#### 2. Middleware Not Working
-
-**Problem**: Routes not being protected
-
-**Solutions**:
-- Check `middleware.ts` is in root directory
-- Verify `publicRoutes` configuration
-- Ensure environment variables are set
-
-#### 3. Social Sign-In Failing
-
-**Problem**: OAuth providers not working
-
-**Solutions**:
-- Enable providers in Clerk Dashboard
-- Configure OAuth app credentials
-- Check redirect URLs match
-
-#### 4. Email Verification Not Sending
-
-**Problem**: Verification emails not received
-
-**Solutions**:
-- Check Clerk email settings
-- Verify email templates are configured
-- Check spam folder
-- Test with different email provider
-
-### Debug Mode
-
-Enable debug logging by adding:
-
-\`\`\`tsx
-// Add to any component for debugging
-console.log("[v0] User state:", user)
-console.log("[v0] Sign-up state:", signUp)
-\`\`\`
-
----
-
-## ✅ Best Practices
-
-### Security
-
-1. **Environment Variables**
-   - Never expose secret keys in client code
-   - Use `NEXT_PUBLIC_` prefix only for public keys
-   - Rotate keys regularly
-
-2. **Route Protection**
-   - Always use middleware for route protection
-   - Implement proper error boundaries
-   - Handle authentication states gracefully
-
-3. **Data Validation**
-   - Validate all form inputs with Zod
-   - Sanitize user data before storage
-   - Implement rate limiting for API routes
-
-### Performance
-
-1. **Component Optimization**
-   - Use React.memo for expensive components
-   - Implement proper loading states
-   - Lazy load non-critical components
-
-2. **Data Fetching**
-   - Use Server Components when possible
-   - Implement proper error boundaries
-   - Cache user data appropriately
-
-### User Experience
-
-1. **Form Handling**
-   - Provide clear error messages
-   - Show loading states during operations
-   - Implement proper form validation
-
-2. **Navigation**
-   - Handle authentication redirects smoothly
-   - Provide clear navigation paths
-   - Implement breadcrumbs for complex flows
-
-### Code Organization
-
-1. **File Structure**
-   - Follow Next.js App Router conventions
-   - Separate concerns properly
-   - Use consistent naming patterns
-
-2. **Component Design**
-   - Keep components focused and reusable
-   - Use proper TypeScript types
-   - Implement proper prop validation
-
----
-
-## 📚 Additional Resources
-
-- [Clerk Documentation](https://clerk.com/docs)
-- [Next.js App Router Guide](https://nextjs.org/docs/app)
-- [shadcn/ui Components](https://ui.shadcn.com)
-- [React Hook Form](https://react-hook-form.com)
-- [Tailwind CSS](https://tailwindcss.com)
-
----
-
-## 🤝 Support
-
-For issues and questions:
-
-1. Check this documentation first
-2. Review Clerk's official documentation
-3. Check the troubleshooting section
-4. Open a support ticket at vercel.com/help
-
----
-
-*Last updated: December 2024*
+MIT License - see LICENSE file for details
