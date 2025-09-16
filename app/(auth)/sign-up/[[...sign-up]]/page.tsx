@@ -84,22 +84,22 @@ export default function SignUpPage() {
                 await setActive({ session: completeSignUp.createdSessionId })
 
                 // Send user data to backend API
-                const response = await fetch("/api/users", {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify({
-                        id: completeSignUp.createdUserId,
-                        email: signUpForm.getValues("email"),
-                        firstName: signUpForm.getValues("firstName"),
-                        lastName: signUpForm.getValues("lastName"),
-                    }),
-                })
+                // const response = await fetch("/api/users", {
+                //     method: "POST",
+                //     headers: {
+                //         "Content-Type": "application/json",
+                //     },
+                //     body: JSON.stringify({
+                //         id: completeSignUp.createdUserId,
+                //         email: signUpForm.getValues("email"),
+                //         firstName: signUpForm.getValues("firstName"),
+                //         lastName: signUpForm.getValues("lastName"),
+                //     }),
+                // })
 
-                if (!response.ok) {
-                    console.error("Failed to store user data")
-                }
+                // if (!response.ok) {
+                //     console.error("Failed to store user data")
+                // }
 
                 router.push("/dashboard")
             }
